@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIGITAL ALCHEMIST // DEV.IO 終極版</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* 引入客製化字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Syne:wght=400;700;800&family=Space+Grotesk:wght=300;400;500;700&family=Plus+Jakarta+Sans:wght=300;400;500;700&family=JetBrains+Mono:wght=400;500&display=swap');
+
+        /* 字體定義 */
+        .font-sans { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+        .font-art { font-family: 'Syne', sans-serif; }
+        .font-cyber { font-family: 'Orbitron', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* 客製化捲軸 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020202; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #39FF14; }
+
+        /* 斜角切角效果 */
+        .clip-corner {
+            clip-path: polygon(
+                0 0,
+                100% 0,
+                100% calc(100% - 15px),
+                calc(100% - 15px) 100%,
+                0 100%
+            );
+        }
+
+        /* 霓虹故障文字動畫 */
+        @keyframes glitch-pulse {
+            0% { text-shadow: 2px 0 rgba(0,255,255,0.7), -2px 0 rgba(255,0,255,0.7); opacity: 1; }
+            20% { text-shadow: -2px 0 rgba(0,255,255,0.7), 2px 0 rgba(255,0,255,0.7); opacity: 0.9; }
+            40% { text-shadow: 1px 0 rgba(0,255,255,0.7), -1px 0 rgba(255,0,255,0.7); opacity: 1; }
+            60% { text-shadow: -1px 0 rgba(0,255,255,0.7), 1px 0 rgba(255,0,255,0.7); opacity: 0.95; }
+            80% { text-shadow: 2px 0 rgba(0,255,255,0.7), -2px 0 rgba(255,0,255,0.7); opacity: 1; }
+            100% { text-shadow: -2px 0 rgba(0,255,255,0.7), 2px 0 rgba(255,0,255,0.7); opacity: 1; }
+        }
+
+        .glitch-text {
+            animation: glitch-pulse 2.5s infinite alternate;
+        }
+
+        /* Marquee 動畫 */
+        @keyframes marquee-scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+
+        .marquee-container {
+            animation: marquee-scroll 10s linear infinite; /* 保持與 React 版一致的速度 */
+        }
+
+        /* Modal 專用動畫 */
+        .modal-active {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
+    </style>
+</head>
+
+<body class="bg-[#020202] text-gray-200 min-h-screen font-sans relative overflow-x-hidden selection:bg-lime-500/90 selection:text-black">
+
+    <!-- 游標光暈效果 (由 JS 控制) -->
+    <div id="cursor-halo" class="fixed inset-0 z-50 pointer-events-none mix-blend-screen transition duration-1000 ease-out" style="background: radial-gradient(150px circle at 0px 0px, rgba(57, 255, 20, 0.25), transparent 100%);"></div>
+
+    <!-- 背景紋理效果 -->
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+
+    <!-- 1. Header (固定在頂部) -->
+    <header class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-4xl">
+        <div class="rounded-full border border-white/10 bg-[#0A0A0A]/80 backdrop-blur-xl shadow-2xl shadow-black/50 px-6 h-14 flex items-center justify-between">
+            <div class="font-bold font-cyber tracking-widest text-gray-200 flex items-center gap-2 cursor-pointer group">
+                <div class="w-2 h-2 bg-lime-400 animate-pulse rounded-full group-hover:shadow-[0_0_10px_#39FF14]"></div>
+                <span class="group-hover:text-white transition-colors"> Tonny Liang </span>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-6 text-xs font-bold font-cyber tracking-wider text-gray-400">
+                <a href="#" class="hover:text-white transition-colors hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">WORK</a>
+                <a href="#" class="hover:text-white transition-colors hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">ABOUT</a>
+                <a href="#" class="hover:text-white transition-colors hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">NOTES</a>
+                <a href="#" class="hover:text-white transition-colors hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">CONTACT</a>
+            </nav>
+
+            <button class="flex items-center gap-2 text-xs text-gray-500 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors border border-white/5 hover:border-lime-400/30 hover:text-lime-400 font-mono">
+                <i data-lucide="command" class="w-3 h-3"></i>
+                <span>K</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="relative z-10">
+        <!-- 2. Hero Section -->
+        <section class="min-h-[90vh] flex flex-col md:flex-row items-center justify-center max-w-6xl mx-auto px-6 pt-32 md:pt-20 gap-12">
+            <div class="flex-1 space-y-6 z-20">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-lime-400/10 border border-lime-400/20 text-lime-400 text-xs font-cyber tracking-widest">
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-lime-500"></span></span>
+                    tonny // magic website
+                </div>
+                <div class="space-y-2 cursor-default">
+                    <h1 class="text-5xl md:text-7xl font-bold tracking-tighter leading-tight drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                        <span class="block font-cyber">Tonny Liang</span>
+                        <span class="block font-art text-transparent bg-clip-text bg-gradient-to-r from-lime-400 via-emerald-400 to-cyan-400 drop-shadow-[0_0_20px_rgba(57,255,20,0.5)]">
+                            INTRERSTING
+                        </span>
+                    </h1>
+                    <h1 class="text-5xl md:text-7xl font-display font-bold tracking-tighter text-gray-700">
+                        <span>个人小网站</span>
+                    </h1>
+                </div>
+                <p class="text-gray-400 text-lg max-w-lg leading-relaxed font-sans">
+                    我是 <span class="text-gray-200 font-medium font-mono">梁铭恩</span> 一名在读大学生
+                </p>
+                  <div class="flex items-center gap-4 pt-4 font-cyber text-sm tracking-wider">
+                    <!-- INIT_PROJECT 介紹按鈕 (點擊彈出綠色霓虹模態框) -->
+                    <button id="btn-init-project" class="flex items-center gap-2 px-6 py-3 rounded-full font-medium font-cyber tracking-wider transition-all relative overflow-hidden group text-black bg-lime-400 hover:scale-[1.05] active:scale-[0.95]">
+                        <span class="relative z-10 flex items-center gap-2">个人介绍 <i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+                        <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                    </button>
+                    <!-- ACCESS_REPO 微信聯繫按鈕 (懸浮彈出藍色霓虹預覽) -->
+                    <button id="btn-access-repo" class="relative flex items-center gap-2 px-6 py-3 rounded-full font-medium font-cyber tracking-wider transition-all overflow-visible group text-white bg-white/10 hover:bg-white/20 border border-white/10 hover:scale-[1.05] active:scale-[0.95]">
+                        <span class="relative z-10 flex items-center gap-2">微信联系方式 <i data-lucide="github" class="w-4 h-4"></i></span>
+
+                        <!-- 懸浮 QR Code 預覽 (藍色霓虹框) -->
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 hidden group-hover:block w-36 p-2 rounded-lg bg-[#0A0A0A] border border-cyan-400/50 shadow-[0_0_15px_rgba(0,255,255,0.7)] transition-opacity duration-300 z-50">
+                            <!-- !!! 圖片位置 1: 懸浮 QR 碼圖片 - JS 將在載入時設置其 SRC !!! -->
+                            <img id="floatingQrImage" src="https://p.sda1.dev/28/6ffe0622a1986b9586a3b72e832ad41c/bad216a058b7c823472fa641093cb3e0.jpg" alt="WeChat QR Code Placeholder" class="w-full rounded-md border border-cyan-700">
+                            <p class="text-[10px] text-center text-cyan-400 font-mono mt-1">SCAN_FOR_CONNECTION</p>
+                            <!-- 藍色三角形指示器 -->
+                            <div class="absolute w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-transparent border-t-cyan-400/50 bottom-[-6px] left-1/2 -translate-x-1/2"></div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 flex justify-center items-center relative min-h-[400px] w-full">
+                <!-- 核心反應爐 (由 JS/CSS 動畫控制) -->
+                <div class="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] flex items-center justify-center pointer-events-none">
+                    <!-- 模糊光暈 -->
+                    <div id="reactor-blur" class="absolute inset-0 filter blur-[80px] opacity-40">
+                        <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-lime-500 via-cyan-500 to-violet-600 rounded-full" style="animation: rotate-scale 8s linear infinite;"></div>
+                    </div>
+                    <!-- 幾何線條 -->
+                    <svg viewBox="0 0 100 100" class="absolute w-full h-full opacity-40" style="animation: rotate-slow 30s linear infinite;">
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="#39FF14" stroke-width="0.2" stroke-dasharray="4 4" />
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#39FF14" stroke-width="0.1" stroke-dasharray="20 10" />
+                    </svg>
+                    <!-- 中央核心 -->
+                    <div id="reactor-core" class="relative z-10 w-24 h-24 bg-black rounded-full border-2 border-lime-500/50 flex items-center justify-center shadow-[0_0_50px_rgba(57,255,20,0.3)]">
+                        <i data-lucide="cpu" class="w-10 h-10 text-lime-400 drop-shadow-[0_0_10px_rgba(57,255,20,1)]"></i>
+                    </div>
+                </div>
+                <style>
+                    @keyframes rotate-scale {
+                        0%, 100% { transform: rotate(0deg) scale(0.9); }
+                        50% { transform: rotate(180deg) scale(1.1); }
+                    }
+                    @keyframes rotate-slow {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(-360deg); }
+                    }
+                    @keyframes core-pulse {
+                        0%, 100% { box-shadow: 0 0 30px rgba(57,255,20,0.2); }
+                        50% { box-shadow: 0 0 60px rgba(57,255,20,0.6); }
+                    }
+                    #reactor-core { animation: core-pulse 2s infinite alternate; }
+                </style>
+            </div>
+        </section>
+
+        <!-- 3. Tech Marquee - 跑馬燈 (由 JS 生成內容) -->
+        <section class="w-full py-10 overflow-hidden relative z-10 border-y border-lime-400/20 bg-black group mt-10 md:mt-0">
+            <!-- 掃描線效果 -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none bg-[linear-gradient(transparent_50%,rgba(57,255,20,0.25)_50%)] bg-[length:100%_4px]"></div>
+            <!-- 遮罩漸變 -->
+            <div class="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#020202] to-transparent z-20"></div>
+            <div class="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#020202] to-transparent z-20"></div>
+
+            <div id="tech-marquee" class="flex gap-12 whitespace-nowrap marquee-container">
+                <!-- JS 會在此處插入內容 -->
+            </div>
+        </section>
+
+        <div class="max-w-5xl mx-auto px-6 space-y-32 py-20">
+            <!-- 4. Bento Grid Section (已修復佈局) -->
+            <section id="bento-grid">
+                <div class="space-y-8 mb-8">
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="text-lime-400"><i data-lucide="terminal" class="w-6 h-6"></i></div>
+                            <h2 class="text-2xl md:text-3xl font-display font-bold text-white tracking-wider drop-shadow-[0_0_5px_rgba(57,255,20,0.3)]">兴趣爱好</h2>
+                        </div>
+                        <p class="text-sm font-mono text-gray-500 pl-9 opacity-80">>> 用戶檔案 & 興趣子程序</p>
+                    </div>
+                </div>
+
+                <!-- 佈局修正：使用 3 欄 grid，並確保所有卡片都能順利流動 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[180px]">
+                    <!-- Card 1 (2x2): 簡介 -->
+                    <div class="bento-card md:col-span-2 md:row-span-2 flex flex-col justify-between bg-gradient-to-br from-[#080808] to-[#020202] clip-corner p-6 md:p-8 hover:scale-[1.02] transition-all duration-300">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded bg-lime-400/10 border border-lime-400/30 flex items-center justify-center text-lime-400 shadow-[0_0_15px_rgba(57,255,20,0.2)]">
+                                <i data-lucide="cpu" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-2xl font-cyber font-bold text-white">
+                                CODE <span class="text-lime-400">&</span> CRAFT
+                            </h3>
+                            <p class="text-gray-400 font-sans leading-relaxed">
+                                除了整天盯著終端窗口，我熱衷於探索技術與藝術的交匯點。
+                                我相信優秀的代碼應該像詩歌一樣優雅，像瑞士鐘表一樣精密。
+                            </p>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            <span class="px-3 py-1 clip-corner text-xs font-mono bg-white/5 border-l border-lime-500/50 text-gray-300 hover:bg-lime-400/10 hover:text-lime-400 transition-colors">_Vue</span>
+                            <span class="px-3 py-1 clip-corner text-xs font-mono bg-white/5 border-l border-lime-500/50 text-gray-300 hover:bg-lime-400/10 hover:text-lime-400 transition-colors">_React</span>
+                            <span class="px-3 py-1 clip-corner text-xs font-mono bg-white/5 border-l border-lime-500/50 text-gray-300 hover:bg-lime-400/10 hover:text-lime-400 transition-colors">_Node</span>
+                            <span class="px-3 py-1 clip-corner text-xs font-mono bg-white/5 border-l border-lime-500/50 text-gray-300 hover:bg-lime-400/10 hover:text-lime-400 transition-colors">_Design</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 (1x1): 街頭攝影 (Top Right) -->
+                    <div class="bento-card flex flex-col justify-center group clip-corner p-6 md:p-8 hover:scale-[1.02] transition-all duration-300 bg-[#0F0F0F] border border-white/5">
+                        <div class="mb-3 p-3 rounded-lg bg-white/5 w-fit group-hover:bg-lime-400/20 group-hover:text-lime-400 transition-colors duration-300 text-gray-200">
+                            <i data-lucide="aperture" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="font-display font-bold text-lg text-gray-200 group-hover:text-white">街頭攝影</h4>
+                        <p class="text-sm font-mono text-gray-500 mt-1 group-hover:text-lime-400/70 transition-colors">Fujifilm X-Pro3 // 城市光影捕手</p>
+                    </div>
+
+                    <!-- Card 3 (1x1): 獨立遊戲 (Bottom Right) - 移除 md:row-span-2 確保佈局穩定 -->
+                    <div class="bento-card flex flex-col justify-center group clip-corner p-6 md:p-8 hover:scale-[1.02] transition-all duration-300 bg-[#0F0F0F] border border-white/5">
+                        <div class="mb-3 p-3 rounded-lg bg-white/5 w-fit group-hover:bg-lime-400/20 group-hover:text-lime-400 transition-colors duration-300 text-gray-200">
+                            <i data-lucide="gamepad2" class="w-6 h-6"></i>
+                        </div>
+                        <h4 class="font-display font-bold text-lg text-gray-200 group-hover:text-white">獨立遊戲</h4>
+                        <p class="text-sm font-mono text-gray-500 mt-1 group-hover:text-lime-400/70 transition-colors">Hollow Knight // 速通挑戰中</p>
+                    </div>
+
+                    <!-- Card 4 (全寬): Synthwave - 確保佔滿第三行所有空間 -->
+                    <div class="bento-card md:col-span-3 flex flex-col justify-center items-start group clip-corner p-6 md:p-8 hover:scale-[1.01] transition-all duration-300 bg-gradient-to-r from-[#0A0A0A] to-[#040404] border border-lime-400/20">
+                        <div class="flex items-center gap-3">
+                            <div class="mb-3 p-3 rounded-lg bg-white/5 w-fit group-hover:bg-lime-400/20 group-hover:text-lime-400 transition-colors duration-300 text-gray-200">
+                                <i data-lucide="disc" class="w-6 h-6"></i>
+                            </div>
+                            <h4 class="font-display font-bold text-lg text-gray-200 group-hover:text-white">Synthwave / Lo-Fi</h4>
+                        </div>
+                        <p class="text-sm font-mono text-gray-500 mt-1 group-hover:text-lime-400/70 transition-colors">Analog Synths // 復古音色 // RUNNING_SUB_ROUTINE</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. Featured Work Section -->
+            <section>
+                <div class="space-y-8 mb-8">
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="text-lime-400"><i data-lucide="layers" class="w-6 h-6"></i></div>
+                            <h2 class="text-2xl md:text-3xl font-display font-bold text-white tracking-wider drop-shadow-[0_0_5px_rgba(57,255,20,0.3)]">SELECTED_WORKS</h2>
+                        </div>
+                        <p class="text-sm font-mono text-gray-500 pl-9 opacity-80">>> 精選項目 & 機密文檔</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Project Card 1 -->
+                    <div class="project-card group relative rounded-2xl bg-[#0F0F0F] border border-white/5 p-8 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300">
+                        <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-300">
+                            <i data-lucide="external-link" class="w-5 h-5 text-lime-400"></i>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex gap-2">
+                                <span class="text-xs font-mono text-violet-400 bg-violet-900/20 px-2 py-1 rounded">Core</span>
+                                <span class="text-xs font-mono text-violet-400 bg-violet-900/20 px-2 py-1 rounded">Hooks</span>
+                            </div>
+                            <h3 class="text-2xl font-art font-bold text-gray-100 group-hover:text-lime-400 transition-colors group-hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.4)]">
+                                React 19: 解構 use()
+                            </h3>
+                            <p class="text-gray-500 font-sans leading-relaxed">React 19 帶來了全新的 'use' 鉤子，從根本上改變了我們處理異步流的方式。</p>
+                        </div>
+                        <div class="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-lime-400 to-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </div>
+
+                    <!-- Project Card 2 -->
+                    <div class="project-card group relative rounded-2xl bg-[#0F0F0F] border border-white/5 p-8 overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300">
+                        <div class="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-300">
+                            <i data-lucide="external-link" class="w-5 h-5 text-lime-400"></i>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex gap-2">
+                                <span class="text-xs font-mono text-violet-400 bg-violet-900/20 px-2 py-1 rounded">WASM</span>
+                                <span class="text-xs font-mono text-violet-400 bg-violet-900/20 px-2 py-1 rounded">V8</span>
+                            </div>
+                            <h3 class="text-2xl font-art font-bold text-gray-100 group-hover:text-lime-400 transition-colors group-hover:drop-shadow-[0_0_8px_rgba(57,255,20,0.4)]">
+                                邊緣的 Rust
+                            </h3>
+                            <p class="text-gray-500 font-sans leading-relaxed">在 V8 隔離環境中運行高性能 Rust 代碼，實現亞毫秒級冷啟動的魔法。</p>
+                        </div>
+                        <div class="absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r from-lime-400 to-violet-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 6. Footer -->
+    <footer class="border-t border-gray-800 bg-[#020202] py-20 relative overflow-hidden">
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-lime-400/5 blur-[100px] rounded-full pointer-events-none"></div>
+        <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start gap-10 relative z-10">
+            <div class="space-y-4">
+                <div class="text-2xl font-bold font-cyber tracking-widest text-white">DEV.IO</div>
+                <p class="text-gray-500 max-w-xs font-sans">
+                    Protocol established 2025.<br/>End of Line.
+                </p>
+            </div>
+            <div class="grid grid-cols-2 gap-12">
+                <div class="space-y-4">
+                    <h4 class="text-sm font-bold font-cyber tracking-wider text-lime-400">LINKS</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="flex items-center gap-2 text-gray-500 hover:text-lime-400 transition-colors text-sm hover:translate-x-1 transform duration-200"><i data-lucide="twitter" class="w-4 h-4"></i> TWITTER</a></li>
+                        <li><a href="#" class="flex items-center gap-2 text-gray-500 hover:text-lime-400 transition-colors text-sm hover:translate-x-1 transform duration-200"><i data-lucide="github" class="w-4 h-4"></i> GITHUB</a></li>
+                        <li><a href="#" class="flex items-center gap-2 text-gray-500 hover:text-lime-400 transition-colors text-sm hover:translate-x-1 transform duration-200"><i data-lucide="linkedin" class="w-4 h-4"></i> LINKEDIN</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <h4 class="text-sm font-bold font-cyber tracking-wider text-lime-400">CONTACT</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="flex items-center gap-2 text-gray-500 hover:text-lime-400 transition-colors text-sm hover:translate-x-1 transform duration-200"><i data-lucide="mail" class="w-4 h-4"></i> MAIL_ME</a></li>
+                        <li><a href="#" class="flex items-center gap-2 text-gray-500 hover:text-lime-400 transition-colors text-sm hover:translate-x-1 transform duration-200"><i data-lucide="rss" class="w-4 h-4"></i> RSS_FEED</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-gray-700 text-sm mt-20 font-cyber tracking-widest">
+            © 2025 DEV.IO CORPORATION.
+        </div>
+    </footer>
+
+    <!-- 7. Modal Overlay for Images (用於點擊 INIT_PROJECT) -->
+    <div id="image-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0" onclick="closeModal(event)">
+        <!-- Modal Content Container -->
+        <div class="relative bg-[#020202] border-2 border-lime-400/50 rounded-lg shadow-2xl shadow-lime-400/20 max-w-4xl w-full p-4 md:p-8 transform scale-95 opacity-0 transition-all duration-300" id="modal-content-container">
+
+            <!-- Close Button -->
+            <button id="modal-close-btn" class="absolute top-4 right-4 text-lime-400 hover:text-white transition-colors p-2 rounded-full border border-lime-400/30 hover:bg-lime-400/20 font-mono text-sm tracking-wider z-10">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Image Container -->
+            <div class="flex flex-col items-center justify-center space-y-4 mt-4">
+                <h3 id="modal-title" class="text-xl font-cyber text-lime-400 tracking-widest mb-4"></h3>
+                <!-- 佔位圖會被 JS 替換 -->
+                <img id="modal-image" src="" alt="Modal Content" class="rounded-md border border-gray-800 object-contain max-h-[80vh] w-auto max-w-full">
+                <p id="modal-caption" class="text-sm text-gray-500 font-mono"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // 初始化 Lucide Icons
+        lucide.createIcons();
+
+        // ----------------------------------------------------
+        // 1. Tech Marquee (跑馬燈) 內容與邏輯
+        // ----------------------------------------------------
+
+        const techStack = [
+            "REACT", "NEXT.JS", "TYPESCRIPT", "RUST", "GO_LANG", "WEB_ASM",
+            "TAILWIND", "THREE.JS", "POSTGRE_SQL", "DOCKER", "K8S", "FIGMA"
+        ];
+
+        // 包含 14 種獨特霓虹漸變的顏色列表
+        const NEON_COLORS = [
+            "from-[#39FF14] to-[#00FFFF]",   // 1. Neon Green -> Cyan
+            "from-[#FF00FF] to-[#FFFF00]",   // 2. Magenta -> Yellow
+            "from-[#00FFFF] to-[#1F51FF]",   // 3. Cyan -> Blue
+            "from-[#FF3131] to-[#FF00FF]",   // 4. Red -> Magenta
+            "from-[#FFFF00] to-[#39FF14]",   // 5. Yellow -> Lime
+            "from-[#1F51FF] to-[#FF3131]",   // 6. Blue -> Red
+            "from-[#F72585] to-[#4CC9F0]",   // 7. Cyber Pink -> Cyber Blue (新增)
+            "from-[#4361EE] to-[#F72585]",   // 8. Royal Blue -> Pink (新增)
+            "from-[#7209B7] to-[#FF9E00]",   // 9. Deep Purple -> Neon Orange (新增)
+            "from-[#FFD166] to-[#06D6A0]",   // 10. Cyber Yellow -> Teal (新增)
+            "from-[#FF5F6D] to-[#FFC371]",   // 11. Orange -> Red-Orange
+            "from-[#7F00FF] to-[#E100FF]",   // 12. Neon Violet -> Electric Blue
+            "from-[#CCFF00] to-[#000000]",   // 13. Toxic Green -> Blackish
+            "from-[#FFFFFF] to-[#00FFFF]",   // 14. White -> Cyan
+        ];
+
+        function populateMarquee() {
+            const marquee = document.getElementById('tech-marquee');
+            if (!marquee) return;
+
+            // 複製內容兩次，實現無限滾動效果
+            const content = [...techStack, ...techStack];
+            let html = '';
+
+            content.forEach((tech, i) => {
+                // 使用取模運算 (i % 顏色數) 來循環選擇顏色，確保連續顏色不同
+                const gradientClass = NEON_COLORS[i % NEON_COLORS.length];
+
+                html += `
+                    <div class="flex items-center gap-4">
+                        <span
+                            class="text-2xl md:text-4xl font-cyber font-black tracking-widest select-none bg-gradient-to-r ${gradientClass} bg-clip-text text-transparent glitch-text relative"
+                        >
+                            ${tech}
+                        </span>
+                        <span class="text-gray-800 font-mono text-xl animate-pulse">///</span>
+                    </div>
+                `;
+            });
+
+            marquee.innerHTML = html;
+        }
+
+        // ----------------------------------------------------
+        // 2. Cursor Halo (游標光暈) 邏輯
+        // ----------------------------------------------------
+
+        function setupCursorHalo() {
+            const halo = document.getElementById('cursor-halo');
+            if (!halo) return;
+
+            document.addEventListener('mousemove', (e) => {
+                // 使用 style 屬性來追蹤滑鼠位置
+                halo.style.background = `radial-gradient(150px circle at ${e.clientX}px ${e.clientY}px, rgba(57, 255, 20, 0.25), transparent 100%)`;
+            });
+        }
+
+        // ----------------------------------------------------
+        // 3. Modal 模態框邏輯 (用於點擊事件)
+        // ----------------------------------------------------
+        const modal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalTitle = document.getElementById('modal-title');
+        const modalCaption = document.getElementById('modal-caption');
+        const modalContentContainer = document.getElementById('modal-content-container');
+        const btnInitProject = document.getElementById('btn-init-project');
+        const btnAccessRepo = document.getElementById('btn-access-repo');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        /**
+         * 顯示模態框並載入指定的圖片和內容
+         * @param {string} title 模態框標題
+         * @param {string} imageUrl 圖片 URL
+         * @param {string} caption 圖片下方的描述
+         */
+        function showModal(title, imageUrl, caption) {
+            modalTitle.textContent = title;
+            modalImage.src = imageUrl;
+            modalCaption.textContent = caption;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // 觸發動畫
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modalContentContainer.classList.add('modal-active');
+            }, 10);
+
+            // 禁用頁面滾動
+            document.body.style.overflow = 'hidden';
+
+            // 重創 Lucide Icons (因為圖片被替換)
+            lucide.createIcons();
+        }
+
+        /**
+         * 隱藏模態框
+         * @param {Event} event 點擊事件
+         */
+        function closeModal(event) {
+            // 僅在點擊關閉按鈕或模態框背景時關閉
+            if (event.target === modal || event.target === modalCloseBtn || modalCloseBtn.contains(event.target)) {
+
+                modal.classList.remove('opacity-100');
+                modalContentContainer.classList.remove('modal-active');
+
+                // 延遲隱藏，等待動畫結束
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // 恢復頁面滾動
+
+                    // 清理圖片來源，釋放資源
+                    modalImage.src = "";
+                }, 300);
+            }
+        }
+
+        // 綁定關閉事件
+        modalCloseBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', closeModal); // 點擊背景關閉
+        modalContentContainer.addEventListener('click', (e) => e.stopPropagation()); // 防止點擊內容區關閉
+
+        // 綁定按鈕點擊事件 (INIT_PROJECT)
+        btnInitProject.addEventListener('click', () => {
+            const imageUrl = "https://raw.githubusercontent.com/Mar200/-/img/img/408d236e4c5487d69033b77adfdd2232.jpg"; // 介紹/簡介佔位圖 (綠色主題)
+            showModal("INIT_PROJECT // 簡介資訊", imageUrl, "這是我的個人檔案介面。");
+        });
+
+        // 綁定按鈕點擊事件 (ACCESS_REPO)
+        btnAccessRepo.addEventListener('click', () => {
+            const imageUrl = "https://raw.githubusercontent.com/Mar200/-/img/img/408d236e4c5487d69033b77adfdd2232.jpg"; // 微信 QR 碼佔位圖 (藍色主題)
+            showModal("ACCESS_REPO // 微信聯繫方式", imageUrl, "掃描 QR 碼以建立加密連線。");
+        });
+
+
+        // ----------------------------------------------------
+        // 4. 通用 Hover 效果邏輯
+        // ----------------------------------------------------
+
+        function setupInteractiveEffects() {
+            // 處理 Bento Card 的 hover 效果 (簡化版)
+            document.querySelectorAll('.bento-card').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    // 提升 Z 軸，突出顯示
+                    card.style.position = 'relative';
+                    card.style.zIndex = 20;
+                    card.classList.add('shadow-xl', 'shadow-lime-400/10');
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.zIndex = 10;
+                    card.classList.remove('shadow-xl', 'shadow-lime-400/10');
+                });
+            });
+
+            // 處理 Project Card 的 hover 效果 (邊框發光)
+            document.querySelectorAll('.project-card').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.classList.add('border-lime-400/40');
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.classList.remove('border-lime-400/40');
+                });
+            });
+        }
+
+
+        // ----------------------------------------------------
+        // 5. 程式入口
+        // ----------------------------------------------------
+
+        window.onload = function() {
+            populateMarquee();
+            setupCursorHalo();
+            setupInteractiveEffects();
+            // 在 JS 加載後，手動創建一次 Lucide Icons 以確保新加入的 Modal 關閉按鈕圖標也顯示
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>
